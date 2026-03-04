@@ -25,7 +25,7 @@ if (!SHOPIFY_ACCESS_TOKEN || !SHOPIFY_STORE_DOMAIN) {
  * @param {object} options - Fetch options (method, body, etc.)
  * @returns {Promise<object>} API response as JSON
  */
-async function shopifyApiCall(endpoint, options = {}) {
+async function shopifyApiCall(endpoint, options = {}, retries = 2) {
   const url = `https://${SHOPIFY_STORE_DOMAIN}/admin/api/${SHOPIFY_API_VERSION}${endpoint}`;
   const headers = {
     'X-Shopify-Access-Token': SHOPIFY_ACCESS_TOKEN,
@@ -36,13 +36,27 @@ async function shopifyApiCall(endpoint, options = {}) {
   try {
     const response = await fetch(url, { ...options, headers });
 
+    // Handle rate limiting (429 Too Many Requests)
+    if (response.status === 429 && retries > 0) {
+      const retryAfter = parseFloat(response.headers.get('Retry-After')) || 2;
+      console.error(`Rate limited. Retrying in ${retryAfter}s...`);
+      await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+      return shopifyApiCall(endpoint, options, retries - 1);
+    }
+
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(`Shopify API Error (${response.status}): ${errorText}`);
     }
 
-    return await response.json();
+    // Handle empty responses (DELETE operations return empty body)
+    const text = await response.text();
+    if (!text || text.trim() === '') {
+      return {};
+    }
+    return JSON.parse(text);
   } catch (error) {
+    if (error.message.startsWith('Shopify API Error')) throw error;
     throw new Error(`Shopify API call failed: ${error.message}`);
   }
 }
@@ -1338,13 +1352,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 
       // ──────────── PRODUCTS ────────────
       case 'shopify_list_products': {
-        const { limit = 50, collection_id, product_type, vendor, status = 'active', title } = args;
+        const { limit = 50, page_info, collection_id, product_type, vendor, status = 'active', title } = args;
 
-        let endpoint = `/products.json?limit=${limit}&status=${status}`;
-        if (collection_id) endpoint += `&collection_id=${collection_id}`;
-        if (product_type) endpoint += `&product_type=${encodeURIComponent(product_type)}`;
-        if (vendor) endpoint += `&vendor=${encodeURIComponent(vendor)}`;
-        if (title) endpoint += `&title=${encodeURIComponent(title)}`;
+        let endpoint;
+        if (page_info) {
+          // Cursor-based pagination: only limit and page_info allowed
+          endpoint = `/products.json?limit=${limit}&page_info=${page_info}`;
+        } else {
+          endpoint = `/products.json?limit=${limit}&status=${status}`;
+          if (collection_id) endpoint += `&collection_id=${collection_id}`;
+          if (product_type) endpoint += `&product_type=${encodeURIComponent(product_type)}`;
+          if (vendor) endpoint += `&vendor=${encodeURIComponent(vendor)}`;
+          if (title) endpoint += `&title=${encodeURIComponent(title)}`;
+        }
 
         const data = await shopifyApiCall(endpoint);
 
