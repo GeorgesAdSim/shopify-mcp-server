@@ -1,0 +1,33 @@
+{
+  "name": "shopify-mcp-server",
+  "version": "1.0.0",
+  "description": "A Model Context Protocol (MCP) server for Shopify Admin API integration. Manage products, orders, customers, collections, inventory and more through any MCP-compatible client.",
+  "type": "module",
+  "main": "index.js",
+  "bin": {
+    "shopify-mcp-server": "./index.js"
+  },
+  "scripts": {
+    "start": "node index.js"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "shopify",
+    "shopify-api",
+    "admin-api",
+    "claude",
+    "ai",
+    "automation",
+    "ecommerce"
+  ],
+  "author": "Georges Cordewiener <georges@adsim.be>",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.8.0",
+    "node-fetch": "^3.3.2"
+  }
+}
