@@ -11,7 +11,7 @@ import fetch from 'node-fetch';
 // Shopify configuration from environment variables
 const SHOPIFY_ACCESS_TOKEN = process.env.SHOPIFY_ACCESS_TOKEN;
 const SHOPIFY_STORE_DOMAIN = process.env.SHOPIFY_STORE_DOMAIN;
-const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2025-01';
+const SHOPIFY_API_VERSION = process.env.SHOPIFY_API_VERSION || '2024-10';
 
 if (!SHOPIFY_ACCESS_TOKEN || !SHOPIFY_STORE_DOMAIN) {
   console.error('Error: Missing environment variables (SHOPIFY_ACCESS_TOKEN, SHOPIFY_STORE_DOMAIN)');

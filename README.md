@@ -114,7 +114,7 @@ Add to `~/Library/Application Support/Claude/claude_desktop_config.json` (macOS)
 |----------|----------|-------------|
 | `SHOPIFY_ACCESS_TOKEN` | Yes | Admin API access token (`shpat_xxx`) |
 | `SHOPIFY_STORE_DOMAIN` | Yes | Your store domain (`xxx.myshopify.com`) |
-| `SHOPIFY_API_VERSION` | No | API version (default: `2025-01`) |
+| `SHOPIFY_API_VERSION` | No | API version (default: `2024-10`) |
 
 ## Usage Examples
 
